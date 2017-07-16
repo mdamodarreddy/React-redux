@@ -11,15 +11,23 @@ class AdditionContainer extends Component {
 			isSummary: false
 		}
 	}
+	componentDidUpdate(){
+		 
+		if(this.state.isSummary){
+			let count = this.state.count;
+			this.refs.answer.value = this.props.addition[count].answer;
+		}
+	}
 	saveUserAnswer(){
 		console.log('saveUserAnswer', this.refs.answer.value);
-		if(this.refs.answer.value != ""){
+		if(this.refs.answer.value != "" && !this.state.isSummary){
 			let count = this.state.count;
 			this.props.addition[count].answer = this.refs.answer.value;
 			this.refs.answer.value = "";
 			if(count < 9){
 				this.setState({count: count + 1});
 			}else{
+				this.setState({count: 0});
 				this.setState({isSummary: true});
 			}
 		}else{
@@ -27,7 +35,12 @@ class AdditionContainer extends Component {
 		}
 	}
 
-	questionPage(count){
+	displaySummaryPage(index){
+		this.refs.answer.value = this.props.addition[index].answer
+		this.setState({count: index});
+	}
+
+	questionPage(count, isSummary){
 		let styles = {
 			height: '50px',
 			width: '50px',
@@ -36,50 +49,53 @@ class AdditionContainer extends Component {
 			textAlign: 'center'
 		}
 		return(
-			<div className="container">
-				<div className="row text-center">
+			<div className="row" style={{border: '2px solid black'}}>
+				<div className="col-sm-8 col-sm-offset-2">
+					<h2> Addition </h2>
+				</div>
+				<div className="col-sm-2 text-right col-sm-offset-4">
 					<h1>{this.props.addition[count].firstValue}</h1>
+				</div>
+				<div className="clearfix"></div>
+				<div className="col-sm-2 text-right col-sm-push-4">
 					<h1> + {this.props.addition[count].secondValue}</h1>
+				</div>
+				<div className="clearfix"></div>
+				<div className="col-sm-2 text-right col-sm-offset-4">
 					<input style={styles} type="text" ref='answer' maxLength="2"
-					autoFocus/>
+					autoFocus/>				
 					<div>{this.refs.answer ? this.refs.answer.value : ''}</div>
-					<br/>
-					<button className="btn btn-primary" onClick={this.saveUserAnswer.bind(this)}>Submit</button>
+				</div><br/>
+				<div className="clearfix"></div>
+				<div className="col-sm-3 text-center col-sm-offset-4">
+					<button className="btn btn-primary" disable={isSummary}
+					onClick={this.saveUserAnswer.bind(this)}>Submit</button>
 				</div>
 			</div>
 		)
 	}
 
-	summaryPage(){
+	summaryPage(count){
 
 		return(
-			<div className="table-responsive">
-				
-			<table className="table table-striped table-bordered">
-			    <thead>
-			      <tr>
-			        <th>FirsValue</th>
-			        <th>SecondValue</th>
-			        <th>Answer</th>
-			      </tr>
-			    </thead>
-			    <tbody>
-			    {
-					this.props.addition.map((data, index) => {
-						return (
-								<tr key={index}>
-							        <td>{data.firstValue}</td>
-							        <td> + {data.secondValue}</td>
-							        <td> = {data.answer}</td>
-							    </tr>
-							)
-					})
+			<div className="row">
+				<div className="col-sm-8">
+				{
+					this.questionPage(count)
 				}
-			      
-			      
-			    </tbody>
-			  </table>
-		</div>
+				</div>
+				<div className="col-sm-4">
+					<ul className="list-group">
+					{
+						this.props.addition.map((data, index) => {
+							return <li className="list-group-item" key={index}
+									onClick={this.displaySummaryPage.bind(this, index)}>Question {index + 1}</li>
+						})
+					}
+					</ul>
+				</div>	
+			
+			</div>
 		)
 	}
 
@@ -90,7 +106,7 @@ class AdditionContainer extends Component {
 		return (
 			<div>
 			{
-				isSummary ? this.summaryPage() : this.questionPage(count)
+				isSummary ? this.summaryPage(count) : this.questionPage(count, isSummary)
 			}
 			</div>
 		)
